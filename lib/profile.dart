@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileScreen extends StatelessWidget {
+  final User? user = FirebaseAuth.instance.currentUser;
+
   @override
   Widget build(BuildContext context) {
+    final name = user?.displayName ?? 'N/A';
+    final email = user?.email ?? 'N/A';
+    final phone = email.split('@').first; // extract phone from email
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -19,14 +26,13 @@ class ProfileScreen extends StatelessWidget {
           ),
           SizedBox(height: 20),
 
-          // Profile Picture Section
+          // Profile Picture
           Center(
             child: Stack(
               children: [
                 CircleAvatar(
                   radius: 60,
-                  backgroundImage: AssetImage(
-                      'assets/images/profile_pic.jpg'), // Add a placeholder image
+                  backgroundImage: AssetImage('assets/images/profile_pic.jpg'),
                 ),
                 Positioned(
                   bottom: 0,
@@ -37,7 +43,6 @@ class ProfileScreen extends StatelessWidget {
                     child: IconButton(
                       icon: Icon(Icons.camera_alt, color: Colors.white, size: 20),
                       onPressed: () {
-                        // Future functionality for changing profile picture
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Change Profile Picture coming soon!')),
                         );
@@ -50,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           SizedBox(height: 20),
 
-          // Profile Details Section
+          // User Details
           Card(
             elevation: 4,
             shape: RoundedRectangleBorder(
@@ -60,22 +65,21 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  _buildProfileRow(Icons.person, 'Name', 'John Doe'),
+                  _buildProfileRow(Icons.person, 'Name', name),
                   Divider(),
-                  _buildProfileRow(Icons.email, 'Email', 'johndoe@example.com'),
+                  _buildProfileRow(Icons.email, 'Email', email),
                   Divider(),
-                  _buildProfileRow(Icons.phone, 'Phone', '+91-9876543210'),
+                  _buildProfileRow(Icons.phone, 'Phone', '+91-$phone'),
                 ],
               ),
             ),
           ),
           SizedBox(height: 20),
 
-          // Edit Profile Button
+          // Edit Profile (future)
           Center(
             child: ElevatedButton(
               onPressed: () {
-                // Add edit functionality
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Edit Profile functionality coming soon!')),
                 );
@@ -98,7 +102,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Helper Widget to Build Each Profile Row
   Widget _buildProfileRow(IconData icon, String label, String value) {
     return Row(
       children: [
@@ -110,10 +113,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
               Text(
                 value,

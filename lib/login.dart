@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dashboard.dart';
-import 'signup.dart'; // Import the SignUpScreen
+import 'signup.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController phoneController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5), // Light gray background
+      backgroundColor: Color(0xFFF5F5F5),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -17,37 +19,17 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Top Icon or Image
-                  Icon(
-                    Icons.lock_outline,
-                    size: 80,
-                    color: Color(0xFF6C63FF), // Matching purple color
-                  ),
+                  Icon(Icons.lock_outline, size: 80, color: Color(0xFF6C63FF)),
                   SizedBox(height: 20),
-                  Text(
-                    'Welcome Back!',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
+                  Text('Welcome Back!',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   SizedBox(height: 10),
-                  Text(
-                    'Log in to continue',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                    ),
-                  ),
+                  Text('Log in to continue',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700])),
                   SizedBox(height: 30),
-
-                  // Login Form
                   Card(
                     elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -64,57 +46,76 @@ class LoginScreen extends StatelessWidget {
                             keyboardType: TextInputType.phone,
                           ),
                           SizedBox(height: 20),
+                          TextField(
+                            controller: passwordController,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: Icon(Icons.lock),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            obscureText: true,
+                          ),
+                          SizedBox(height: 20),
                           ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => DashboardScreen()),
-                              );
+                            onPressed: () async {
+                              final phone = phoneController.text.trim();
+                              final password = passwordController.text.trim();
+
+                              if (phone.isEmpty || password.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Please fill in both fields')),
+                                );
+                                return;
+                              }
+
+                              final fakeEmail = '$phone@suvidha.ai';
+
+                              try {
+                                await FirebaseAuth.instance.signInWithEmailAndPassword(
+                                  email: fakeEmail,
+                                  password: password,
+                                );
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => DashboardScreen()),
+                                );
+                              } on FirebaseAuthException catch (e) {
+                                String errorMsg = 'Login failed: ${e.message}';
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(errorMsg)),
+                                );
+                              }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF6C63FF), // Purple button
+                              backgroundColor: Color(0xFF6C63FF),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              padding: EdgeInsets.symmetric(
-                                vertical: 15,
-                                horizontal: 30,
-                              ),
+                              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                             ),
-                            child: Text(
-                              'Login',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            child: Text('Login',
+                                style: TextStyle(color: Colors.white, fontSize: 16)),
                           ),
                         ],
                       ),
                     ),
                   ),
-
                   SizedBox(height: 20),
-
-                  // Footer Text with Navigation
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => SignUpScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => SignUpScreen()),
                       );
                     },
                     child: Text(
                       "Don't have an account? Sign Up",
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF6C63FF), // Purple color for clickable text
-                        fontWeight: FontWeight.bold,
-                      ),
+                          fontSize: 14,
+                          color: Color(0xFF6C63FF),
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

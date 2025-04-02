@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'discover_schemes.dart'; // File for Discover Schemes screen
-import 'document_upload_screen.dart'; // File for Document Upload screen
-import 'profile.dart'; // File for Profile screen
+import 'package:firebase_auth/firebase_auth.dart';
+import 'discover_schemes.dart';
+import 'document_upload_screen.dart';
+import 'profile.dart';
+import 'login.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -12,7 +13,6 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
 
-  // Titles for each tab
   final List<String> _titles = [
     'Dashboard',
     'Discover Schemes',
@@ -20,22 +20,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Profile',
   ];
 
-  final List<Widget> _pages = [
-    DashboardContent(), // Main dashboard content
-    DiscoverSchemesScreen(), // Discover schemes
-    DocumentUploadScreen(), // Upload documents
-    ProfileScreen(), // Profile page
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final userName = FirebaseAuth.instance.currentUser?.displayName ?? 'User';
+
+    final List<Widget> _pages = [
+      DashboardContent(userName: userName),
+      DiscoverSchemesScreen(),
+      DocumentUploadScreen(),
+      ProfileScreen(),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _titles[_currentIndex], // Dynamic title based on the current tab
-          style: TextStyle(color: Colors.white), // White title text for AppBar
+          _titles[_currentIndex],
+          style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Color(0xFF6C63FF),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -71,6 +86,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 }
 
 class DashboardContent extends StatelessWidget {
+  final String userName;
+
+  const DashboardContent({required this.userName});
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -91,7 +110,7 @@ class DashboardContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome Back, User!',
+                    'Welcome Back, $userName!',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -110,15 +129,9 @@ class DashboardContent extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20),
-
-            // Statistics Section
             Text(
               'Your Statistics',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
             Row(
@@ -126,26 +139,20 @@ class DashboardContent extends StatelessWidget {
               children: [
                 _buildAnimatedStatisticsCard(
                   title: 'Schemes Explored',
-                  endValue: 15, // End value for animation
+                  endValue: 15,
                   color: Colors.purple,
                 ),
                 _buildAnimatedStatisticsCard(
                   title: 'Documents Uploaded',
-                  endValue: 8, // End value for animation
+                  endValue: 8,
                   color: Colors.teal,
                 ),
               ],
             ),
             SizedBox(height: 20),
-
-            // Recommendations Section
             Text(
               'Recommended for You',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
             Card(
@@ -157,10 +164,7 @@ class DashboardContent extends StatelessWidget {
                 leading: Icon(Icons.star, color: Color(0xFF6C63FF)),
                 title: Text('PM Kisan Scheme'),
                 subtitle: Text('Financial aid for small farmers.'),
-                trailing: Icon(Icons.arrow_forward, color: Colors.grey),
-                onTap: () {
-                  // Navigate to the scheme details
-                },
+                trailing: Icon(Icons.arrow_forward),
               ),
             ),
             Card(
@@ -172,22 +176,13 @@ class DashboardContent extends StatelessWidget {
                 leading: Icon(Icons.star, color: Color(0xFF6C63FF)),
                 title: Text('Ayushman Bharat'),
                 subtitle: Text('Health insurance for families.'),
-                trailing: Icon(Icons.arrow_forward, color: Colors.grey),
-                onTap: () {
-                  // Navigate to the scheme details
-                },
+                trailing: Icon(Icons.arrow_forward),
               ),
             ),
             SizedBox(height: 20),
-
-            // Tips Section
             Text(
               'Tips for You',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
             Card(
@@ -198,8 +193,7 @@ class DashboardContent extends StatelessWidget {
               child: ListTile(
                 leading: Icon(Icons.lightbulb, color: Colors.orange),
                 title: Text('Keep your documents updated!'),
-                subtitle: Text(
-                    'Upload the latest documents to get the best scheme recommendations.'),
+                subtitle: Text('Upload latest documents for best recommendations.'),
               ),
             ),
           ],
@@ -208,7 +202,6 @@ class DashboardContent extends StatelessWidget {
     );
   }
 
-  // Reusable Widget: Animated Statistics Card
   Widget _buildAnimatedStatisticsCard({
     required String title,
     required int endValue,
@@ -242,10 +235,7 @@ class DashboardContent extends StatelessWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[700],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
               ),
             ],
           ),
